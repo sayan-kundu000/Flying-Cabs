@@ -1,0 +1,1374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Flying Cabs India — Ola & Uber Bharat Edition</title>
+  <meta name="description" content="Next-generation ride-hailing and aero-mobility across India. On-demand Ola Autos, Uber Cabs, and DGCA Sky-Cabs covering Delhi NCR, Mumbai, Bengaluru, Hyderabad, Kolkata, Chennai, Jamshedpur and whole of India.">
+  
+  <!-- Modern Google Fonts Typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Leaflet Map CSS (For High-Definition Topographic Terrain & Fallback) -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+  
+  <!-- Custom Modern Stylesheet -->
+  <link rel="stylesheet" href="/static/style.css">
+  <link rel="icon" type="image/png" href="/static/assets/logo.png">
+  
+  <!-- Razorpay Standard Checkout SDK -->
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+</head>
+<body class="dark-theme">
+
+  <!-- ================= TOP NAVIGATION BAR ================= -->
+  <header class="app-header" id="app-header">
+    <div class="header-left">
+      <div class="brand-logo-container" title="Flying Cabs — Ola & Uber Bharat Mobility">
+        <img src="/static/assets/logo.png" alt="Flying Cabs Logo" class="brand-logo" id="brand-logo">
+        <div class="brand-text">
+          <div class="brand-name-row">
+            <span class="brand-name">FLYING<span class="brand-highlight">CABS</span></span>
+            <span class="brand-edition-tag">OLA & UBER BHARAT</span>
+          </div>
+          <span class="brand-subtext">Whole India Ground & Sky Mobility</span>
+        </div>
+      </div>
+
+      <!-- Whole India City Quick-Switcher -->
+      <div class="city-selector-wrap" id="city-selector-wrap" title="Switch Indian City or Pan-India View">
+        <span class="city-selector-icon">🇮🇳</span>
+        <select id="city-select" class="city-select">
+          <option value="all_india">🇮🇳 Whole India (Pan-India Map)</option>
+          <option value="delhi">🏛️ Delhi NCR (National Capital)</option>
+          <option value="mumbai">🌊 Mumbai (Financial Capital)</option>
+          <option value="bengaluru" selected>💻 Bengaluru (Silicon City)</option>
+          <option value="hyderabad">🏰 Hyderabad (Cyberabad)</option>
+          <option value="chennai">🏖️ Chennai (Automotive Hub)</option>
+          <option value="kolkata">🌉 Kolkata (Cultural Capital)</option>
+          <option value="pune">🏢 Pune (IT Corridor)</option>
+          <option value="ahmedabad">🪁 Ahmedabad (Sabarmati Hub)</option>
+          <option value="jaipur">🦚 Jaipur (Pink City)</option>
+          <option value="jamshedpur">🏭 Jamshedpur (Steel City)</option>
+          <option value="lucknow">🪔 Lucknow (Nawabi Heritage)</option>
+          <option value="chandigarh">🌲 Chandigarh (City Beautiful)</option>
+          <option value="kochi">🌴 Kochi (Queen of Arabian Sea)</option>
+          <option value="goa">🏖️ Goa (Coastal Transit)</option>
+          <option value="indore">🍽️ Indore (Cleanest City)</option>
+          <option value="patna">📜 Patna (Pataliputra Hub)</option>
+          <option value="bhopal">🏞️ Bhopal (City of Lakes)</option>
+          <option value="guwahati">🦏 Guwahati (Gateway to North East)</option>
+          <option value="srinagar">🏔️ Srinagar (Kashmir Valley)</option>
+          <option value="varanasi">🕉️ Varanasi (Spiritual Ghats)</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Mode Switcher Tabs -->
+    <div class="mode-switcher" id="mode-switcher">
+      <button class="mode-btn active" id="tab-rider" data-mode="rider">
+        <span class="mode-icon">🧍</span> Rider Mode
+      </button>
+      <button class="mode-btn" id="tab-driver" data-mode="driver">
+        <span class="mode-icon">🚖</span> Driver Cockpit
+      </button>
+      <button class="mode-btn" id="tab-radar" data-mode="radar">
+        <span class="mode-icon">🌐</span> Fleet Radar
+      </button>
+    </div>
+
+    <!-- Right Controls: Map Style, API Keys, Sim Toggle, History, Profile -->
+    <div class="header-right">
+      <!-- Map Style / Terrain Dropdown -->
+      <div class="map-style-selector-wrap" title="Select Map Design / Terrain Layer">
+        <span class="map-icon-mini">⛰️</span>
+        <select id="map-style-select" class="map-style-select">
+          <option value="terrain" selected>⛰️ Google Terrain (Relief)</option>
+          <option value="uber_clean">🗺️ Uber Clean Light</option>
+          <option value="ola_dark">🌙 Ola Dark Transit</option>
+          <option value="satellite">🛰️ Satellite Hybrid</option>
+          <option value="topo_terrain">🌐 Topo Relief (Offline)</option>
+        </select>
+      </div>
+
+      <!-- API Keys Manager Modal Trigger -->
+      <button class="icon-btn btn-api-keys" id="btn-open-api-keys" title="Manage Google Maps & Razorpay API Keys">
+        <span class="icon">🔑</span>
+        <span class="btn-text">API Keys</span>
+      </button>
+
+      <!-- Auto-Pilot Toggle -->
+      <div class="sim-toggle-wrapper" title="Simulate real-time driver matching and GPS movement">
+        <label class="switch-label" for="sim-toggle">
+          <span class="sim-indicator pulse-dot"></span>
+          <span class="sim-text">Auto Pilot</span>
+          <input type="checkbox" id="sim-toggle" checked>
+          <span class="slider round"></span>
+        </label>
+      </div>
+
+      <!-- Ride History -->
+      <button class="icon-btn" id="btn-open-history" title="View Past Trips & Receipts">
+        <span class="icon">📜</span>
+        <span class="btn-text">History</span>
+      </button>
+
+      <!-- User Profile Navigation & Auth Container -->
+      <div class="user-nav-container" id="user-nav-container">
+        <!-- Persona Pill -->
+        <div class="user-pill" id="current-user-pill" title="Account & Persona Switcher">
+          <div class="nav-avatar-wrap">
+            <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150" alt="Avatar" class="nav-user-img" id="nav-user-img">
+            <div class="user-avatar hidden" id="nav-user-avatar">AS</div>
+            <span class="online-indicator-dot"></span>
+          </div>
+          <div class="user-details">
+            <span class="user-name" id="nav-user-name">Aarav Sharma</span>
+            <span class="user-role-badge" id="nav-user-role">Passenger (India)</span>
+          </div>
+          <span class="pill-dropdown-icon">▾</span>
+        </div>
+
+        <!-- Glassmorphism User Profile & Switcher Dropdown -->
+        <div class="user-profile-dropdown hidden" id="user-profile-dropdown">
+          <div class="profile-card-top">
+            <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150" alt="Profile" class="dropdown-profile-img" id="dropdown-user-img">
+            <div class="dropdown-profile-info">
+              <span class="dropdown-user-name" id="dropdown-user-name">Aarav Sharma</span>
+              <span class="dropdown-user-email" id="dropdown-user-email">aarav.sharma@aerocabs.in</span>
+              <div class="dropdown-meta-row">
+                <span class="dropdown-role-tag" id="dropdown-user-role">RIDER</span>
+                <span class="dropdown-rating-tag" id="dropdown-user-rating">★ 4.95 Rating</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="dropdown-divider"></div>
+
+          <!-- Quick Switcher Personas with Indian Faces -->
+          <div class="dropdown-section-title">Quick Switch Demo Personas</div>
+          <div class="persona-chips-list" id="persona-chips-list">
+            <!-- Dynamically populated or static fallbacks -->
+            <button class="persona-chip-btn active" data-userid="1" title="Switch to Aarav (Passenger)">
+              <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100" class="persona-face-img">
+              <div class="persona-text">
+                <span class="p-name">Aarav Sharma</span>
+                <span class="p-role">Rider • Delhi/BLR</span>
+              </div>
+            </button>
+            <button class="persona-chip-btn" data-userid="2" title="Switch to Capt. Vikram (Sky Pilot)">
+              <img src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=100" class="persona-face-img">
+              <div class="persona-text">
+                <span class="p-name">Capt. Vikram Rathore</span>
+                <span class="p-role">Sky Pilot • AeroVTOL</span>
+              </div>
+            </button>
+            <button class="persona-chip-btn" data-userid="3" title="Switch to Rajesh Kumar (Chauffeur)">
+              <img src="https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=100" class="persona-face-img">
+              <div class="persona-text">
+                <span class="p-name">Rajesh Kumar</span>
+                <span class="p-role">Driver • Tigor EV</span>
+              </div>
+            </button>
+            <button class="persona-chip-btn" data-userid="4" title="Switch to Manjunath (Auto Driver)">
+              <img src="https://images.unsplash.com/photo-1501196354995-cbb51c65aaea?w=100" class="persona-face-img">
+              <div class="persona-text">
+                <span class="p-name">Manjunath Gowda</span>
+                <span class="p-role">Auto Pilot • Bajaj EV</span>
+              </div>
+            </button>
+          </div>
+
+          <div class="dropdown-divider"></div>
+
+          <!-- Account Actions -->
+          <div class="dropdown-actions">
+            <button class="dropdown-action-btn" id="btn-dropdown-signin">
+              <span class="action-icon">🔑</span>
+              <span>Sign In / Login</span>
+            </button>
+            <button class="dropdown-action-btn" id="btn-dropdown-register">
+              <span class="action-icon">✨</span>
+              <span>Register New User / Partner</span>
+            </button>
+            <button class="dropdown-action-btn danger-btn" id="btn-dropdown-logout">
+              <span class="action-icon">🚪</span>
+              <span>Sign Out</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ================= MAIN WORKSPACE LAYOUT ================= -->
+  <main class="app-layout" id="main-content">
+    
+    <!-- LEFT SIDEBAR: Context-Aware Panel (Rider / Driver / Radar) -->
+    <aside class="side-panel" id="side-panel">
+      
+      <!-- ================= 1. RIDER VIEW PANEL ================= -->
+      <div class="panel-section active" id="rider-panel">
+        
+        <!-- Panel Header -->
+        <div class="panel-header">
+          <div class="section-title-wrap">
+            <h1 class="panel-title" id="panel-city-heading">Book Ride in Bengaluru</h1>
+            <p class="panel-subtitle" id="panel-city-subtext">Instant Ola Autos, Uber Cabs & DGCA Sky-Cabs</p>
+          </div>
+          <span class="skyway-status-tag" id="network-status-tag"><span class="live-dot"></span> High Fleet Coverage</span>
+        </div>
+
+        <!-- Hotspot Quick-Picks (Dynamically Updated per City) -->
+        <div class="hotspots-group">
+          <div class="hotspots-header">
+            <label class="group-label">Popular City Hubs & Skyports</label>
+            <span class="hotspot-city-label" id="hotspot-city-label">Bengaluru Hubs</span>
+          </div>
+          <div class="hotspot-chips" id="hotspot-chips">
+            <!-- Populated dynamically via JavaScript -->
+          </div>
+        </div>
+
+        <!-- Pickup & Destination Location Inputs with Pan-India Autocomplete -->
+        <div class="location-inputs-card">
+          <!-- Pickup Row -->
+          <div class="input-row">
+            <div class="pin-indicator pickup-pin" title="Pickup"></div>
+            <div class="input-wrap relative-wrap">
+              <label for="pickup-input">Pickup Location (Address, Landmark or 6-digit PIN)</label>
+              <div class="input-field-container">
+                <input type="text" id="pickup-input" autocomplete="off" placeholder="Search address, landmark or 6-digit PIN (e.g. 560001, Connaught Place, MG Road)..." value="MG Road Skyport & Metro Terminal, Bengaluru">
+                <button type="button" class="btn-input-clear hidden" id="btn-clear-pickup" title="Clear pickup input">✕</button>
+                <span class="input-search-spinner hidden" id="pickup-spinner"></span>
+              </div>
+              <!-- Live Pan-India Autocomplete Dropdown -->
+              <div class="autocomplete-dropdown hidden" id="pickup-autocomplete"></div>
+            </div>
+            <button class="btn-gps-locate" id="btn-gps-current" title="Detect & Use Real GPS Location"><span class="gps-icon">🛰️</span> Live GPS</button>
+            <button class="btn-map-pick" id="btn-pick-origin" title="Pick pickup on map">📍</button>
+          </div>
+
+          <!-- Connecting Line with Distance Indicator & Swap Button -->
+          <div class="connector-line">
+            <span class="connector-dot"></span>
+            <button type="button" class="btn-swap-locations" id="btn-swap-locations" title="Swap Source & Destination (⇅)">
+              <span class="swap-icon">⇅</span>
+              <span class="swap-label">Swap</span>
+            </button>
+            <span class="connector-dist-pill" id="route-dist-badge">31.2 km</span>
+          </div>
+
+          <!-- Destination Row -->
+          <div class="input-row">
+            <div class="pin-indicator drop-pin" title="Destination"></div>
+            <div class="input-wrap relative-wrap">
+              <label for="drop-input">Destination (Address, Landmark or 6-digit PIN)</label>
+              <div class="input-field-container">
+                <input type="text" id="drop-input" autocomplete="off" placeholder="Search drop address, landmark or 6-digit PIN (e.g. 560038, Cyber City, Airport)..." value="Kempegowda International Airport (BLR) Skyport">
+                <button type="button" class="btn-input-clear hidden" id="btn-clear-drop" title="Clear destination input">✕</button>
+                <span class="input-search-spinner hidden" id="drop-spinner"></span>
+              </div>
+              <!-- Live Pan-India Autocomplete Dropdown -->
+              <div class="autocomplete-dropdown hidden" id="drop-autocomplete"></div>
+            </div>
+            <button class="btn-map-pick" id="btn-pick-dest" title="Pick destination on map">🎯</button>
+          </div>
+
+          <!-- Interactive Postal PIN Code Quick Search Bar -->
+          <div class="pincode-quick-bar">
+            <span class="pincode-bar-icon">📮</span>
+            <span class="pincode-bar-title">Quick PIN Search:</span>
+            <div class="pincode-chips" id="pincode-quick-chips">
+              <button type="button" class="pin-chip" data-pin="560001" title="Bengaluru Central / MG Road">560001 (BLR)</button>
+              <button type="button" class="pin-chip" data-pin="560038" title="Indiranagar, Bengaluru">560038 (BLR)</button>
+              <button type="button" class="pin-chip" data-pin="110001" title="Connaught Place, New Delhi">110001 (DEL)</button>
+              <button type="button" class="pin-chip" data-pin="400001" title="Fort / CSMT, Mumbai">400001 (BOM)</button>
+              <button type="button" class="pin-chip" data-pin="500081" title="HITEC City, Hyderabad">500081 (HYD)</button>
+              <button type="button" class="pin-chip" data-pin="600027" title="Airport, Chennai">600027 (MAA)</button>
+              <button type="button" class="pin-chip" data-pin="700091" title="Sector V Salt Lake, Kolkata">700091 (CCU)</button>
+              <button type="button" class="pin-chip" data-pin="411057" title="Hinjewadi IT Park, Pune">411057 (PNQ)</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Vehicle Tiers Section (Ola & Uber Bharat First-Version Lineup with Pilots & Cars) -->
+        <div class="vehicle-tier-section">
+          <div class="section-header-compact">
+            <div class="section-title-tag">
+              <label class="group-label">Choose Ride Category</label>
+              <span class="tier-hint" id="tier-dist-hint">6 Options Available • Live Pricing</span>
+            </div>
+            <button class="btn-fleet-showcase" id="btn-open-fleet-showcase" title="Inspect Car Models, Specs & Pilot Face Profiles">
+              🚗 Choice of Cars & Pilots
+            </button>
+          </div>
+
+          <div class="tiers-container" id="tiers-container">
+            <!-- Dynamically populated or rendered -->
+            <!-- 1. Auto -->
+            <div class="tier-card" data-tier="auto" id="tier-auto">
+              <div class="tier-badge budget-badge">MOST ECONOMICAL</div>
+              <div class="tier-icon-wrap"><span class="tier-icon">🛺</span></div>
+              <div class="tier-info">
+                <div class="tier-name-row">
+                  <span class="tier-name">Ola Auto / Uber Auto</span>
+                  <span class="tier-price" id="price-auto">₹410</span>
+                </div>
+                <div class="tier-subtext">Iconic 3-wheeler auto rickshaw. Beats street congestion.</div>
+                <div class="tier-meta">
+                  <span class="meta-tag">⚡ 2 min away</span>
+                  <span class="meta-tag">👥 3 Seats</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- 2. Micro -->
+            <div class="tier-card" data-tier="micro" id="tier-micro">
+              <div class="tier-icon-wrap"><span class="tier-icon">🚗</span></div>
+              <div class="tier-info">
+                <div class="tier-name-row">
+                  <span class="tier-name">Ola Micro / UberGo</span>
+                  <span class="tier-price" id="price-micro">₹470</span>
+                </div>
+                <div class="tier-subtext">Compact AC hatchback (WagonR, Tiago) for daily commutes.</div>
+                <div class="tier-meta">
+                  <span class="meta-tag">⚡ 3 min away</span>
+                  <span class="meta-tag">👥 4 Seats</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- 3. Standard / Mini (Default active) -->
+            <div class="tier-card active" data-tier="standard" id="tier-standard">
+              <div class="tier-badge popular-badge">MOST POPULAR</div>
+              <div class="tier-icon-wrap"><span class="tier-icon">🚖</span></div>
+              <div class="tier-info">
+                <div class="tier-name-row">
+                  <span class="tier-name">Ola Mini / UberX</span>
+                  <span class="tier-price" id="price-standard">₹580</span>
+                </div>
+                <div class="tier-subtext">Comfortable everyday AC sedan/hatch (Swift Dzire).</div>
+                <div class="tier-meta">
+                  <span class="meta-tag">⚡ 3 min away</span>
+                  <span class="meta-tag">👥 4 Seats</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- 4. Prime / Luxury -->
+            <div class="tier-card" data-tier="luxury" id="tier-luxury">
+              <div class="tier-icon-wrap"><span class="tier-icon">⚡</span></div>
+              <div class="tier-info">
+                <div class="tier-name-row">
+                  <span class="tier-name">Ola Prime / Uber Premier</span>
+                  <span class="tier-price" id="price-luxury">₹900</span>
+                </div>
+                <div class="tier-subtext">Spacious executive sedan with top-rated 5-star chauffeur.</div>
+                <div class="tier-meta">
+                  <span class="meta-tag">✨ 4 min away</span>
+                  <span class="meta-tag">👥 4 Seats</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- 5. Bike Taxi -->
+            <div class="tier-card" data-tier="bike" id="tier-bike">
+              <div class="tier-badge fast-badge">FASTEST GROUND</div>
+              <div class="tier-icon-wrap"><span class="tier-icon">🏍️</span></div>
+              <div class="tier-info">
+                <div class="tier-name-row">
+                  <span class="tier-name">Ola Bike / Uber Moto</span>
+                  <span class="tier-price" id="price-bike">₹275</span>
+                </div>
+                <div class="tier-subtext">Quick solo bike taxi to weave through Indian traffic.</div>
+                <div class="tier-meta">
+                  <span class="meta-tag">⚡ 1 min away</span>
+                  <span class="meta-tag">👥 1 Seat</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- 6. Flying Cab / VTOL -->
+            <div class="tier-card" data-tier="flying" id="tier-flying">
+              <div class="tier-badge sky-badge">AIR TRANSIT • ZERO TRAFFIC</div>
+              <div class="tier-icon-wrap"><span class="tier-icon">🛸</span></div>
+              <div class="tier-info">
+                <div class="tier-name-row">
+                  <span class="tier-name">Ola Air / Uber Elevate (VTOL)</span>
+                  <span class="tier-price" id="price-flying">₹1,635</span>
+                </div>
+                <div class="tier-subtext">DGCA sky corridor eVTOL. Bypasses all ground congestion.</div>
+                <div class="tier-meta">
+                  <span class="meta-tag">🚀 16 min Sky ETA</span>
+                  <span class="meta-tag">👥 4 Seats</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Payment Mode Quick Selector -->
+        <div class="payment-quick-bar">
+          <label class="group-label">Payment Mode</label>
+          <div class="payment-mode-pills">
+            <button class="pay-pill active" data-paymode="razorpay" id="paymode-razorpay">
+              <span class="pill-icon">🛡️</span>
+              <span>Razorpay (UPI / Cards)</span>
+            </button>
+            <button class="pay-pill" data-paymode="cash" id="paymode-cash">
+              <span class="pill-icon">💵</span>
+              <span>Cash to Driver</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Action / Booking Button -->
+        <div class="booking-action-wrap">
+          <button class="primary-action-btn" id="btn-request-ride">
+            <span class="btn-glow"></span>
+            <span class="btn-label" id="request-btn-label">Book Ola Mini / UberX • ₹580</span>
+            <span class="btn-arrow">➔</span>
+          </button>
+        </div>
+
+        <!-- ACTIVE RIDE STATUS CARD (Shown during ride lifecycle) -->
+        <div class="active-ride-card hidden" id="active-ride-card">
+          <div class="ride-card-header">
+            <div class="ride-status-badge" id="ride-status-badge">
+              <span class="status-pulse"></span>
+              <span id="ride-status-text">CONNECTING TO NEARBY DRIVERS...</span>
+            </div>
+            <button class="btn-cancel-ride" id="btn-cancel-ride" title="Cancel ride">✕ Cancel</button>
+          </div>
+
+          <!-- Searching Radar Animation (When REQUESTED) -->
+          <div class="searching-radar-wrap" id="searching-radar-wrap">
+            <div class="radar-circle radar-pulse-1"></div>
+            <div class="radar-circle radar-pulse-2"></div>
+            <div class="radar-center-icon">📡</div>
+            <span class="radar-label" id="radar-search-label">Contacting drivers in your sector...</span>
+          </div>
+
+          <!-- Driver Profile Widget (When ACCEPTED) -->
+          <div class="driver-profile-widget hidden" id="driver-profile-widget">
+            <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150" alt="Driver" class="driver-img" id="widget-driver-img">
+            <div class="driver-widget-info">
+              <div class="driver-name-row">
+                <span class="driver-name" id="widget-driver-name">Rajesh Kumar</span>
+                <span class="driver-rating" id="widget-driver-rating">★ 4.92</span>
+              </div>
+              <div class="driver-vehicle-row">
+                <span class="vehicle-model" id="widget-vehicle-name">Maruti Swift Dzire White</span>
+                <span class="vehicle-plate" id="widget-plate">DL-03-CAB-4421</span>
+              </div>
+              <div class="telemetry-bar">
+                <span class="telemetry-item" id="widget-altitude">Ground</span>
+                <span class="telemetry-item" id="widget-battery">Batt: 88%</span>
+                <span class="telemetry-item" id="widget-speed">Speed: 42 km/h</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- OLA & UBER 4-DIGIT RIDE START OTP BOX -->
+          <div class="otp-security-box hidden" id="otp-security-box">
+            <div class="otp-left">
+              <span class="otp-icon">🔒</span>
+              <div class="otp-text-block">
+                <span class="otp-title">START RIDE OTP</span>
+                <span class="otp-subtitle">Share with driver when cab arrives</span>
+              </div>
+            </div>
+            <div class="otp-digits-wrap" id="otp-digits-wrap">
+              <span class="otp-digit" id="otp-d1">4</span>
+              <span class="otp-digit" id="otp-d2">8</span>
+              <span class="otp-digit" id="otp-d3">2</span>
+              <span class="otp-digit" id="otp-d4">9</span>
+            </div>
+          </div>
+
+          <!-- Driver Contact Action Buttons -->
+          <div class="driver-contact-actions hidden" id="driver-contact-actions">
+            <button class="btn-driver-call" id="btn-call-driver">
+              <span>📞</span> Call Driver
+            </button>
+            <button class="btn-driver-msg" id="btn-msg-driver">
+              <span>💬</span> Message
+            </button>
+          </div>
+
+          <!-- Trip Progress Tracker -->
+          <div class="trip-progress-container">
+            <div class="progress-bar-track">
+              <div class="progress-bar-fill" id="ride-progress-fill"></div>
+            </div>
+            <div class="progress-steps-row">
+              <span class="step-point active" id="step-requested">Request</span>
+              <span class="step-point" id="step-accepted">Accepted</span>
+              <span class="step-point" id="step-arrived">Arrived</span>
+              <span class="step-point" id="step-transit">In Trip</span>
+              <span class="step-point" id="step-completed">Dropoff</span>
+            </div>
+          </div>
+
+          <!-- Ride ETA notification banner -->
+          <div class="eta-banner" id="eta-banner">
+            <span class="eta-icon">⏱️</span>
+            <span class="eta-message" id="eta-message">Driver dispatched. Heading to your pickup point.</span>
+          </div>
+
+          <!-- Ride Completed Action buttons -->
+          <div class="ride-complete-actions hidden" id="ride-complete-actions">
+            <button class="btn-pay-modal" id="btn-open-payment">⚡ Pay via Razorpay (UPI / Card)</button>
+            <button class="btn-receipt-modal" id="btn-open-receipt">🧾 View GST Invoice</button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ================= 2. DRIVER COCKPIT PANEL ================= -->
+      <div class="panel-section hidden" id="driver-panel">
+        <div class="panel-header">
+          <div class="section-title-wrap">
+            <h2 class="panel-title">Driver Partner Cockpit</h2>
+            <p class="panel-subtitle">Manage online duty, accept ride requests & verify passenger OTP</p>
+          </div>
+          <div class="driver-online-switch">
+            <label class="switch-label">
+              <input type="checkbox" id="driver-status-toggle" checked>
+              <span class="slider round"></span>
+            </label>
+            <span class="online-status-label" id="driver-online-text">ONLINE</span>
+          </div>
+        </div>
+
+        <!-- Shift Performance Metrics -->
+        <div class="driver-metrics-grid">
+          <div class="metric-card">
+            <span class="metric-label">Today's Earnings</span>
+            <span class="metric-val" id="metric-earnings">₹3,850</span>
+            <span class="metric-sub">+18% vs daily target</span>
+          </div>
+          <div class="metric-card">
+            <span class="metric-label">Completed Trips</span>
+            <span class="metric-val" id="metric-trips">12</span>
+            <span class="metric-sub">Top Rated Partner</span>
+          </div>
+          <div class="metric-card">
+            <span class="metric-label">Partner Rating</span>
+            <span class="metric-val" id="metric-rating">4.94 ★</span>
+            <span class="metric-sub">Top 1% Pan-India</span>
+          </div>
+          <div class="metric-card">
+            <span class="metric-label">Vehicle Battery</span>
+            <span class="metric-val" id="metric-battery">92% ⚡</span>
+            <span class="metric-sub">EV Ready</span>
+          </div>
+        </div>
+
+        <!-- Incoming Ride Request Alert in Cockpit -->
+        <div class="incoming-dispatch-card hidden" id="driver-incoming-card">
+          <div class="dispatch-alert-badge">⚡ INCOMING RIDE REQUEST</div>
+          <div class="dispatch-details">
+            <div class="dispatch-fare" id="incoming-fare">₹580</div>
+            <div class="dispatch-route">
+              <div class="route-line-item">📍 <strong id="incoming-pickup">MG Road Metro Station</strong></div>
+              <div class="route-line-item">🎯 <strong id="incoming-drop">Kempegowda Airport (BLR)</strong></div>
+            </div>
+            <div class="dispatch-meta">
+              <span id="incoming-dist">31.2 km</span> • <span id="incoming-tier">Ola Mini / UberX</span>
+            </div>
+          </div>
+          <div class="dispatch-actions">
+            <button class="btn-decline" id="btn-driver-decline">Decline</button>
+            <button class="btn-accept" id="btn-driver-accept">Accept Ride (<span id="dispatch-timer-sec">15</span>s)</button>
+          </div>
+        </div>
+
+        <!-- Driver Ride Lifecycle Controls & OTP Verification -->
+        <div class="driver-ride-controls-card hidden" id="driver-controls-card">
+          <h3 class="controls-card-title">Active Passenger Trip</h3>
+          <div class="controls-status-text" id="driver-control-status">En route to passenger pickup location</div>
+          
+          <!-- Driver OTP Input Form (Required to Start Ride) -->
+          <div class="driver-otp-verification-section" id="driver-otp-verify-section">
+            <label class="otp-verify-label">Enter Passenger 4-Digit OTP to Start Trip:</label>
+            <div class="driver-otp-inputs">
+              <input type="text" maxlength="4" class="driver-otp-field" id="driver-otp-input" placeholder="e.g. 4829">
+              <button class="btn-verify-otp" id="btn-verify-otp">Verify OTP</button>
+            </div>
+            <span class="otp-verify-hint" id="otp-verify-hint">Ask passenger for the 4-digit code shown on their app.</span>
+          </div>
+
+          <div class="driver-buttons-stack">
+            <button class="btn-action-step" id="btn-driver-step-arrived">1. Mark Arrived at Pickup</button>
+            <button class="btn-action-step disabled" id="btn-driver-step-start" disabled>2. Start Trip (OTP Required)</button>
+            <button class="btn-action-step disabled" id="btn-driver-step-complete" disabled>3. Complete Trip & Collect Fare</button>
+          </div>
+        </div>
+
+        <div class="driver-instructions-note">
+          <p>💡 <strong>Ola & Uber Partner Simulator:</strong> Test both Passenger and Driver roles simultaneously. Use the persona switcher on the top navigation bar to toggle between passenger and driver partner views!</p>
+        </div>
+      </div>
+
+      <!-- ================= 3. FLEET RADAR / ADMIN PANEL ================= -->
+      <div class="panel-section hidden" id="radar-panel">
+        <div class="panel-header">
+          <div class="section-title-wrap">
+            <h2 class="panel-title">Pan-India Fleet Radar</h2>
+            <p class="panel-subtitle">Real-time telemetry of Ola Autos, Cabs, and VTOLs across India</p>
+          </div>
+          <span class="skyway-status-tag"><span class="live-dot"></span> All-India ATC Online</span>
+        </div>
+
+        <div class="fleet-stats-row">
+          <div class="fleet-stat">
+            <span class="fs-num" id="stat-total-cabs">12</span>
+            <span class="fs-txt">Active Fleet</span>
+          </div>
+          <div class="fleet-stat">
+            <span class="fs-num" id="stat-in-flight">6</span>
+            <span class="fs-txt">Sky VTOLs</span>
+          </div>
+          <div class="fleet-stat">
+            <span class="fs-num" id="stat-ground-cabs">6</span>
+            <span class="fs-txt">Ground Cabs/Autos</span>
+          </div>
+        </div>
+
+        <div class="fleet-list" id="fleet-cabs-list">
+          <!-- Loaded dynamically from /api/drivers/nearby -->
+        </div>
+      </div>
+
+    </aside>
+
+    <!-- RIGHT WORKSPACE: Interactive Map (Google Maps / Terrain / Leaflet) -->
+    <section class="map-viewport" id="map-viewport">
+      <!-- Container for Google Maps or Leaflet -->
+      <div id="leaflet-map" class="map-container-layer"></div>
+      <div id="google-map" class="map-container-layer hidden"></div>
+
+      <!-- Map Floating Overlay Controls -->
+      <div class="map-overlay-hud">
+        <div class="hud-pill" id="hud-status-pill">
+          <span class="hud-dot"></span>
+          <span class="hud-text" id="hud-status-text">Coverage Active • Whole India (Pan-India Sector)</span>
+        </div>
+
+        <div class="hud-actions">
+          <button class="hud-btn hud-btn-gps" id="btn-gps-map" title="Locate My GPS Position"><span class="gps-beacon-icon">📍</span> My GPS</button>
+          <button class="hud-btn" id="btn-pan-india" title="View Whole Indian Map">🇮🇳 Whole India</button>
+          <button class="hud-btn" id="btn-recenter-map" title="Recenter Selected City">🎯 Center City</button>
+          <button class="hud-btn" id="btn-toggle-traffic" title="Toggle Sky Corridors & Road Arteries">🛰️ Corridors</button>
+        </div>
+      </div>
+
+      <!-- Live Flight Instrument Mini-HUD (When In Air) -->
+      <div class="flight-hud-box hidden" id="flight-hud-box">
+        <div class="flight-hud-title">AERO VTOL TELEMETRY • DGCA SKYWAY</div>
+        <div class="flight-hud-metrics">
+          <div class="f-metric">
+            <span class="f-lbl">ALTITUDE</span>
+            <span class="f-val" id="hud-alt-val">160 m</span>
+          </div>
+          <div class="f-metric">
+            <span class="f-lbl">SPEED</span>
+            <span class="f-val" id="hud-speed-val">115 km/h</span>
+          </div>
+          <div class="f-metric">
+            <span class="f-lbl">CORRIDOR</span>
+            <span class="f-val" id="hud-corridor-val">IND-SKY-01</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ================= MODALS & DRAWERS ================= -->
+
+  <!-- 1. API Keys & Map Configuration Modal -->
+  <div class="modal-backdrop hidden" id="api-keys-modal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="modal-title-wrap">
+          <h3 class="modal-title">API Keys & Map Configuration</h3>
+          <p class="modal-desc">Configure Google Maps & Razorpay Payment Gateway</p>
+        </div>
+        <button class="modal-close-btn" id="btn-close-api-keys">✕</button>
+      </div>
+      <div class="modal-body">
+        <!-- Google Maps API Key section -->
+        <div class="config-field-group">
+          <div class="field-header">
+            <label for="cfg-gmaps-key"><strong>Google Maps API Key</strong> (JavaScript API & Terrain)</label>
+            <span class="field-status-badge" id="gmaps-status-badge">Configured</span>
+          </div>
+          <input type="text" id="cfg-gmaps-key" class="config-input" placeholder="AIzaSy...">
+          <p class="field-hint">Used to power Google Maps JavaScript API with Terrain relief contours. An auto-fallback to Topographic Terrain tiles is included.</p>
+        </div>
+
+        <!-- Google Maps Map Type -->
+        <div class="config-field-group">
+          <label for="cfg-gmaps-type"><strong>Default Map View Style</strong></label>
+          <select id="cfg-gmaps-type" class="config-select">
+            <option value="terrain" selected>⛰️ Google Maps Terrain (Relief & Elevations)</option>
+            <option value="roadmap">🗺️ Urban Road Map (Clean Uber/Ola)</option>
+            <option value="satellite">🛰️ Satellite Aerial</option>
+            <option value="hybrid">🌐 Hybrid (Satellite + Roads)</option>
+          </select>
+        </div>
+
+        <!-- Razorpay Configuration -->
+        <div class="config-field-group">
+          <div class="field-header">
+            <label for="cfg-razorpay-key"><strong>Razorpay Key ID</strong> (Test / Live Mode)</label>
+            <span class="field-status-badge" id="rzp-status-badge">Test Sandbox Ready</span>
+          </div>
+          <input type="text" id="cfg-razorpay-key" class="config-input" placeholder="rzp_test_...">
+          <p class="field-hint">Supports Indian UPI (Google Pay, PhonePe, Paytm), RuPay Cards, and NetBanking.</p>
+        </div>
+
+        <div class="config-field-group">
+          <label for="cfg-razorpay-secret"><strong>Razorpay Key Secret</strong></label>
+          <input type="password" id="cfg-razorpay-secret" class="config-input" placeholder="Enter key secret (optional for test mode)">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-cancel" id="btn-cancel-api-keys">Cancel</button>
+        <button class="btn-submit-pay" id="btn-save-api-keys">Save & Apply API Keys</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. Razorpay & Cash Payment Modal -->
+  <div class="modal-backdrop hidden" id="payment-modal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="modal-title-wrap">
+          <h3 class="modal-title">Authorize Trip Payment</h3>
+          <p class="modal-desc">Razorpay Official Gateway • Instant UPI & Bharat Gateway</p>
+        </div>
+        <button class="modal-close-btn" id="btn-close-payment">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="payment-amount-box">
+          <span class="amount-label">Trip Total (Incl. 5% GST)</span>
+          <span class="amount-val" id="pay-modal-amount">₹580</span>
+        </div>
+
+        <div class="payment-method-selector">
+          <label class="group-label">Select Payment Gateway / Method (India)</label>
+          <div class="method-option active" data-method="Razorpay (UPI / Cards / NetBanking)">
+            <div class="method-icon rzp-icon-wrap">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#00f0ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="5" width="20" height="14" rx="2"/>
+                <line x1="1" y1="10" x2="23" y2="10"/>
+              </svg>
+            </div>
+            <div class="method-info">
+              <div class="method-name-row">
+                <span class="method-name">Razorpay Gateway (UPI / Cards)</span>
+                <span class="rzp-pill">Recommended</span>
+              </div>
+              <span class="method-sub">Instant Google Pay, PhonePe, Paytm, RuPay, NetBanking</span>
+            </div>
+            <span class="check-mark">✓</span>
+          </div>
+
+          <div class="method-option" data-method="Cash to Driver">
+            <span class="method-icon">💵</span>
+            <div class="method-info">
+              <span class="method-name">Cash to Driver (Ola & Uber Classic)</span>
+              <span class="method-sub">Pay directly to driver in cash upon arrival</span>
+            </div>
+            <span class="check-mark"></span>
+          </div>
+
+          <div class="method-option" data-method="UPI Direct QR">
+            <span class="method-icon">⚡</span>
+            <div class="method-info">
+              <span class="method-name">UPI Dynamic Bharat QR Code</span>
+              <span class="method-sub">Scan from any Indian banking app (BHIM / GPay)</span>
+            </div>
+            <span class="check-mark"></span>
+          </div>
+
+          <div class="method-option" data-method="Ola Money / Cab Wallet">
+            <span class="method-icon">🪙</span>
+            <div class="method-info">
+              <span class="method-name">Ola Money / Cab Wallet</span>
+              <span class="method-sub">Balance: ₹2,450.00</span>
+            </div>
+            <span class="check-mark"></span>
+          </div>
+        </div>
+
+        <div class="tip-selector">
+          <label class="group-label">Add Driver Tip (Optional)</label>
+          <div class="tip-chips">
+            <button class="tip-chip" data-tip="0">No Tip</button>
+            <button class="tip-chip" data-tip="30">+₹30</button>
+            <button class="tip-chip active" data-tip="50">+₹50</button>
+            <button class="tip-chip" data-tip="100">+₹100</button>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-submit-pay" id="btn-confirm-payment">
+          <span>Authorize & Pay with Razorpay</span>
+          <span id="btn-pay-total">₹630</span>
+        </button>
+        <div class="rzp-security-badge">
+          <span>🔒 256-Bit SSL Encrypted • PCI-DSS Certified • Razorpay Payments</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2B. Official Razorpay Interactive Gateway & Sandbox Modal -->
+  <div class="modal-backdrop hidden" id="razorpay-sandbox-modal">
+    <div class="modal-card rzp-gateway-card">
+      <!-- Razorpay Dark Navy Brand Header -->
+      <div class="rzp-header">
+        <div class="rzp-brand-row">
+          <div class="rzp-logo-wrap">
+            <svg class="rzp-svg-logo" viewBox="0 0 120 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12.5 0L0 28H8.5L14.2 15.2L17.5 28H26L18.8 0H12.5Z" fill="#00f0ff"/>
+              <path d="M21 7.5L16.2 18.5H23.5L25 12.5H29C32.5 12.5 35 11 35 7.5C35 4 32.5 2.5 29 2.5H21V7.5ZM26 5H28.5C30 5 30.8 5.8 30.8 7.5C30.8 9.2 30 10 28.5 10H25.5L26 5Z" fill="#ffffff"/>
+              <text x="38" y="19" font-family="'Outfit', sans-serif" font-size="16" font-weight="800" fill="#ffffff" letter-spacing="0.5">Razorpay</text>
+            </svg>
+            <span class="rzp-mode-pill" id="rzp-modal-badge">Sandbox / Test</span>
+          </div>
+          <button class="modal-close-btn rzp-close-btn" id="btn-close-rzp-modal">✕</button>
+        </div>
+        <div class="rzp-merchant-summary">
+          <div class="rzp-merchant-col">
+            <span class="rzp-merchant-label">Paying to</span>
+            <span class="rzp-merchant-name" id="rzp-merchant-name">Flying Cabs (Ola-Uber Bharat)</span>
+            <span class="rzp-order-ref" id="rzp-order-ref">Order: order_mock_...</span>
+          </div>
+          <div class="rzp-amount-col">
+            <span class="rzp-total-label">Amount Payable</span>
+            <span class="rzp-total-val" id="rzp-modal-amount">₹630</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Razorpay Body: Multi-tab layout (UPI, Card, NetBanking, Wallet) -->
+      <div class="rzp-body">
+        <!-- Sidebar Navigation -->
+        <div class="rzp-nav-sidebar">
+          <button class="rzp-nav-item active" data-tab="upi">
+            <span class="rzp-nav-icon">📱</span>
+            <span class="rzp-nav-text">UPI & QR</span>
+            <span class="rzp-nav-tag">Fast</span>
+          </button>
+          <button class="rzp-nav-item" data-tab="card">
+            <span class="rzp-nav-icon">💳</span>
+            <span class="rzp-nav-text">Cards</span>
+          </button>
+          <button class="rzp-nav-item" data-tab="netbanking">
+            <span class="rzp-nav-icon">🏦</span>
+            <span class="rzp-nav-text">NetBanking</span>
+          </button>
+          <button class="rzp-nav-item" data-tab="wallet">
+            <span class="rzp-nav-icon">👛</span>
+            <span class="rzp-nav-text">Wallets</span>
+          </button>
+        </div>
+
+        <!-- Content Area -->
+        <div class="rzp-tab-content">
+          <!-- 1. UPI Tab -->
+          <div class="rzp-pane active" id="rzp-pane-upi">
+            <div class="rzp-section-heading">
+              <span>Pay via Any UPI App (Zero Surcharge)</span>
+            </div>
+
+            <!-- Instant UPI Apps Grid -->
+            <div class="rzp-upi-apps-grid">
+              <button class="rzp-app-btn" data-app="Google Pay">
+                <span class="rzp-app-icon">🔵</span>
+                <span class="rzp-app-name">Google Pay</span>
+              </button>
+              <button class="rzp-app-btn" data-app="PhonePe">
+                <span class="rzp-app-icon">🟣</span>
+                <span class="rzp-app-name">PhonePe</span>
+              </button>
+              <button class="rzp-app-btn" data-app="Paytm UPI">
+                <span class="rzp-app-icon">🔷</span>
+                <span class="rzp-app-name">Paytm</span>
+              </button>
+              <button class="rzp-app-btn" data-app="BHIM UPI">
+                <span class="rzp-app-icon">🇮🇳</span>
+                <span class="rzp-app-name">BHIM</span>
+              </button>
+            </div>
+
+            <div class="rzp-divider"><span>OR ENTER UPI ID</span></div>
+
+            <!-- UPI ID / VPA Input -->
+            <div class="rzp-vpa-wrap">
+              <div class="rzp-vpa-input-group">
+                <input type="text" id="rzp-vpa-input" class="rzp-input" placeholder="e.g. yourname@okhdfcbank" value="aarav.sharma@okaxis">
+                <button class="btn-rzp-vpa-pay" id="btn-rzp-pay-vpa">Verify & Pay</button>
+              </div>
+              <span class="rzp-field-hint">Instant authorization across all Indian UPI apps</span>
+            </div>
+
+            <div class="rzp-divider"><span>OR SCAN BHARAT UPI QR</span></div>
+
+            <!-- Interactive Dynamic QR Code -->
+            <div class="rzp-qr-wrap">
+              <div class="rzp-qr-box" id="rzp-qr-svg-container">
+                <!-- SVG QR Generated Dynamically -->
+              </div>
+              <div class="rzp-qr-info">
+                <span class="rzp-qr-instruction">Scan with GPay, PhonePe, Paytm, or BHIM</span>
+                <span class="rzp-qr-timer">Expires in <strong id="rzp-qr-countdown">04:59</strong></span>
+                <button class="btn-rzp-scan-sim" id="btn-rzp-scan-sim">⚡ Simulate UPI App Scan & Pay</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 2. Cards Tab -->
+          <div class="rzp-pane" id="rzp-pane-card">
+            <div class="rzp-section-heading">
+              <span>Debit or Credit Card</span>
+              <button class="rzp-fill-test-btn" id="btn-rzp-fill-card">Fill Test Card</button>
+            </div>
+
+            <div class="rzp-card-form" id="rzp-card-form-wrap">
+              <div class="rzp-form-group">
+                <label>Card Number</label>
+                <div class="rzp-card-input-wrap">
+                  <input type="text" id="rzp-card-number" class="rzp-input" placeholder="4111 2222 3333 4444" maxlength="19" value="4111 2222 3333 4444">
+                  <span class="rzp-card-badge">RuPay / Visa</span>
+                </div>
+              </div>
+
+              <div class="rzp-form-row">
+                <div class="rzp-form-group half">
+                  <label>Expiry (MM/YY)</label>
+                  <input type="text" id="rzp-card-expiry" class="rzp-input" placeholder="12/28" maxlength="5" value="12/28">
+                </div>
+                <div class="rzp-form-group half">
+                  <label>CVV</label>
+                  <input type="password" id="rzp-card-cvv" class="rzp-input" placeholder="123" maxlength="4" value="123">
+                </div>
+              </div>
+
+              <div class="rzp-form-group">
+                <label>Cardholder Name</label>
+                <input type="text" id="rzp-card-name" class="rzp-input" placeholder="Name on card" value="Aarav Sharma">
+              </div>
+
+              <button class="btn-rzp-submit" id="btn-rzp-pay-card">
+                <span>Proceed to Pay ₹</span><span class="rzp-btn-amount">630</span>
+              </button>
+            </div>
+
+            <!-- 3D Secure / OTP Screen Simulation -->
+            <div class="rzp-otp-screen hidden" id="rzp-card-otp-screen">
+              <div class="rzp-otp-box">
+                <span class="rzp-otp-icon">🛡️</span>
+                <h4>Bank 3D-Secure Authentication</h4>
+                <p>One Time Password (OTP) sent to <strong>+91 98*** 43210</strong></p>
+                <div class="rzp-otp-input-wrap">
+                  <input type="text" id="rzp-bank-otp" class="rzp-input text-center" maxlength="6" value="123456">
+                </div>
+                <button class="btn-rzp-submit" id="btn-rzp-submit-otp">Confirm Bank OTP & Pay</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- 3. NetBanking Tab -->
+          <div class="rzp-pane" id="rzp-pane-netbanking">
+            <div class="rzp-section-heading">
+              <span>Select Bank</span>
+            </div>
+
+            <div class="rzp-banks-grid">
+              <button class="rzp-bank-btn active" data-bank="State Bank of India">
+                <span class="bank-avatar sbi">SBI</span>
+                <span>State Bank of India</span>
+              </button>
+              <button class="rzp-bank-btn" data-bank="HDFC Bank">
+                <span class="bank-avatar hdfc">HDFC</span>
+                <span>HDFC Bank</span>
+              </button>
+              <button class="rzp-bank-btn" data-bank="ICICI Bank">
+                <span class="bank-avatar icici">ICICI</span>
+                <span>ICICI Bank</span>
+              </button>
+              <button class="rzp-bank-btn" data-bank="Axis Bank">
+                <span class="bank-avatar axis">AXIS</span>
+                <span>Axis Bank</span>
+              </button>
+              <button class="rzp-bank-btn" data-bank="Kotak Mahindra Bank">
+                <span class="bank-avatar kotak">KOTAK</span>
+                <span>Kotak Mahindra</span>
+              </button>
+              <button class="rzp-bank-btn" data-bank="Punjab National Bank">
+                <span class="bank-avatar pnb">PNB</span>
+                <span>Punjab National</span>
+              </button>
+            </div>
+
+            <button class="btn-rzp-submit mt-16" id="btn-rzp-pay-bank">
+              <span>Authorize NetBanking via </span><strong id="rzp-selected-bank-name">SBI</strong>
+            </button>
+          </div>
+
+          <!-- 4. Wallets Tab -->
+          <div class="rzp-pane" id="rzp-pane-wallet">
+            <div class="rzp-section-heading">
+              <span>Digital Wallets</span>
+            </div>
+
+            <div class="rzp-wallets-list">
+              <div class="rzp-wallet-item active" data-wallet="Ola Money / Cab Wallet">
+                <span class="wallet-icon">🪙</span>
+                <div class="wallet-details">
+                  <span class="wallet-title">Ola Money / Cab Wallet</span>
+                  <span class="wallet-balance">Available Balance: ₹2,450.00</span>
+                </div>
+                <span class="wallet-check">✓</span>
+              </div>
+              <div class="rzp-wallet-item" data-wallet="Amazon Pay">
+                <span class="wallet-icon">🅰️</span>
+                <div class="wallet-details">
+                  <span class="wallet-title">Amazon Pay</span>
+                  <span class="wallet-balance">Linked Amazon Account</span>
+                </div>
+                <span class="wallet-check"></span>
+              </div>
+              <div class="rzp-wallet-item" data-wallet="Paytm Wallet">
+                <span class="wallet-icon">🔷</span>
+                <div class="wallet-details">
+                  <span class="wallet-title">Paytm Wallet</span>
+                  <span class="wallet-balance">Instant Balance Debit</span>
+                </div>
+                <span class="wallet-check"></span>
+              </div>
+            </div>
+
+            <button class="btn-rzp-submit mt-16" id="btn-rzp-pay-wallet">
+              <span>Pay from Wallet</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Razorpay Processing Overlay -->
+      <div class="rzp-processing-overlay hidden" id="rzp-processing-overlay">
+        <div class="rzp-proc-spinner"></div>
+        <h4 class="rzp-proc-title" id="rzp-proc-title">Contacting Bank & NPCI...</h4>
+        <p class="rzp-proc-desc" id="rzp-proc-desc">Please do not refresh or close this window.</p>
+        <div class="rzp-secure-badge-sm">🔒 256-Bit SSL Bank Encrypted</div>
+      </div>
+
+      <!-- Razorpay Footer -->
+      <div class="rzp-footer">
+        <span>🔒 Razorpay Trusted Business • Secured by 256-Bit SSL • PCI-DSS Certified</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. Review Modal (Ola & Uber Style) -->
+  <div class="modal-backdrop hidden" id="review-modal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="modal-title-wrap">
+          <h3 class="modal-title">Rate Your Ride</h3>
+          <p class="modal-desc">Share feedback to help maintain top-rated service standards</p>
+        </div>
+        <button class="modal-close-btn" id="btn-close-review">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="star-rating-row" id="star-rating-row">
+          <span class="star selected" data-star="1">★</span>
+          <span class="star selected" data-star="2">★</span>
+          <span class="star selected" data-star="3">★</span>
+          <span class="star selected" data-star="4">★</span>
+          <span class="star selected" data-star="5">★</span>
+        </div>
+
+        <!-- Ola / Uber Praise Tags -->
+        <div class="review-tags-wrap">
+          <span class="review-tag active">✨ Clean Cab</span>
+          <span class="review-tag active">🛡️ Safe Driving</span>
+          <span class="review-tag active">🤝 Polite Driver</span>
+          <span class="review-tag">⏱️ Punctual</span>
+          <span class="review-tag">🗺️ Good Route</span>
+        </div>
+
+        <div class="review-input-wrap">
+          <label for="review-comment-input">Feedback for Driver</label>
+          <textarea id="review-comment-input" rows="3" placeholder="Great ride! Driver was polite and reached destination smoothly."></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-submit-pay" id="btn-submit-review">Submit Feedback</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. GST Tax Invoice Receipt Modal -->
+  <div class="modal-backdrop hidden" id="receipt-modal">
+    <div class="modal-card receipt-card">
+      <div class="modal-header">
+        <div class="modal-title-wrap">
+          <h3 class="modal-title">Official Tax Invoice (GST)</h3>
+          <p class="modal-desc" id="rcp-number">IND-CAB-000001</p>
+        </div>
+        <button class="modal-close-btn" id="btn-close-receipt">✕</button>
+      </div>
+      <div class="modal-body receipt-body" id="receipt-content">
+        <!-- Rendered dynamically -->
+      </div>
+      <div class="modal-footer">
+        <button class="btn-print-receipt" id="btn-print-receipt">🖨️ Print / Save GST Invoice</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. Driver Chat & Call Simulation Modal -->
+  <div class="modal-backdrop hidden" id="chat-modal">
+    <div class="modal-card chat-card">
+      <div class="modal-header">
+        <div class="modal-title-wrap">
+          <h3 class="modal-title" id="chat-modal-title">Contact Driver</h3>
+          <p class="modal-desc">Instant Messaging & Call Relay</p>
+        </div>
+        <button class="modal-close-btn" id="btn-close-chat">✕</button>
+      </div>
+      <div class="modal-body chat-body">
+        <div class="chat-messages-container" id="chat-messages-container">
+          <div class="chat-msg driver-msg">
+            <span class="msg-sender">Driver</span>
+            <span class="msg-bubble">Namaste! I am on my way to your pickup location. Please wait at the main gate.</span>
+          </div>
+        </div>
+        <div class="chat-quick-replies">
+          <button class="quick-chip" data-text="I am waiting at the main entrance.">I'm at the entrance</button>
+          <button class="quick-chip" data-text="Coming down in 2 minutes.">Coming in 2 mins</button>
+          <button class="quick-chip" data-text="Please call when you reach.">Please call on arrival</button>
+        </div>
+        <div class="chat-input-row">
+          <input type="text" id="chat-text-input" placeholder="Type a message to your driver...">
+          <button class="btn-send-chat" id="btn-send-chat">Send</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 6. Ride History Drawer -->
+  <div class="drawer-backdrop hidden" id="history-drawer">
+    <div class="drawer-card">
+      <div class="drawer-header">
+        <h3>Ride History & Tax Receipts</h3>
+        <button class="drawer-close-btn" id="btn-close-history">✕</button>
+      </div>
+      <div class="drawer-body" id="history-list-container">
+        <p class="empty-text">No rides completed yet.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 7. Authentication Modal: Sign In & Register Partner / Rider -->
+  <div class="modal-backdrop hidden" id="auth-modal">
+    <div class="modal-card auth-modal-card">
+      <div class="modal-header">
+        <div class="modal-title-wrap">
+          <div class="auth-header-badge">🇮🇳 FLYING CABS BHARAT IDENTITY</div>
+          <h3 class="modal-title" id="auth-modal-title">Welcome to Flying Cabs</h3>
+          <p class="modal-desc" id="auth-modal-desc">Access next-gen ground cabs, auto rickshaws & DGCA eVTOL air corridors</p>
+        </div>
+        <button class="modal-close-btn" id="btn-close-auth">✕</button>
+      </div>
+
+      <!-- Tab Switcher: Sign In vs Register -->
+      <div class="auth-tab-bar">
+        <button class="auth-tab-btn active" id="tab-auth-login">
+          <span>🔑</span> Sign In
+        </button>
+        <button class="auth-tab-btn" id="tab-auth-register">
+          <span>✨</span> Register Account / Partner
+        </button>
+      </div>
+
+      <div class="modal-body auth-modal-body">
+        <!-- TAB 1: SIGN IN FORM -->
+        <form class="auth-form-pane" id="form-auth-login">
+          <div class="auth-field">
+            <label for="login-ident">Email or Mobile Number</label>
+            <div class="input-icon-wrap">
+              <span class="field-icon">📧</span>
+              <input type="text" id="login-ident" placeholder="aarav.sharma@aerocabs.in or +91 98765 43210" required>
+            </div>
+          </div>
+          <div class="auth-field">
+            <div class="label-with-link">
+              <label for="login-pass">Password</label>
+              <span class="forgot-link">Demo Mode (Any password works)</span>
+            </div>
+            <div class="input-icon-wrap">
+              <span class="field-icon">🔒</span>
+              <input type="password" id="login-pass" placeholder="••••••••" value="demo123">
+            </div>
+          </div>
+
+          <!-- 1-Click Fast Demo Login Buttons -->
+          <div class="demo-login-box">
+            <span class="demo-box-label">⚡ 1-Click Quick Demo Access</span>
+            <div class="demo-login-chips">
+              <button type="button" class="demo-chip-btn" data-demo="rider">
+                <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=80" class="chip-avatar" alt="Aarav">
+                <span>Rider (Aarav)</span>
+              </button>
+              <button type="button" class="demo-chip-btn" data-demo="pilot">
+                <img src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=80" class="chip-avatar" alt="Capt. Vikram">
+                <span>Pilot (Capt. Vikram)</span>
+              </button>
+              <button type="button" class="demo-chip-btn" data-demo="driver">
+                <img src="https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=80" class="chip-avatar" alt="Rajesh">
+                <span>Chauffeur (Rajesh)</span>
+              </button>
+            </div>
+          </div>
+
+          <button type="submit" class="btn-auth-primary" id="btn-submit-login">
+            <span class="btn-spinner hidden" id="login-spinner"></span>
+            <span>Sign In to Flying Cabs ➔</span>
+          </button>
+        </form>
+
+        <!-- TAB 2: REGISTER FORM WITH CURATED INDIAN FACES & CAR CHOICE -->
+        <form class="auth-form-pane hidden" id="form-auth-register">
+          <div class="auth-fields-row">
+            <div class="auth-field">
+              <label for="reg-name">Full Name</label>
+              <input type="text" id="reg-name" placeholder="e.g. Priya Sharma" required>
+            </div>
+            <div class="auth-field">
+              <label for="reg-phone">Mobile Number (+91)</label>
+              <input type="tel" id="reg-phone" placeholder="+91 98765 00000" required>
+            </div>
+          </div>
+
+          <div class="auth-fields-row">
+            <div class="auth-field">
+              <label for="reg-email">Email Address</label>
+              <input type="email" id="reg-email" placeholder="priya.sharma@example.in" required>
+            </div>
+            <div class="auth-field">
+              <label for="reg-pass">Create Password</label>
+              <input type="password" id="reg-pass" placeholder="At least 6 characters" required>
+            </div>
+          </div>
+
+          <!-- Account Role Selector -->
+          <div class="auth-field">
+            <label>Select Account Role</label>
+            <div class="role-selector-bar">
+              <label class="role-radio-label active" id="label-role-rider">
+                <input type="radio" name="reg_role" value="rider" checked>
+                <span class="role-icon">🧍</span>
+                <span class="role-title">Passenger / Rider</span>
+                <span class="role-subtitle">Book Cabs, Autos & Flights</span>
+              </label>
+              <label class="role-radio-label" id="label-role-driver">
+                <input type="radio" name="reg_role" value="driver">
+                <span class="role-icon">🚖</span>
+                <span class="role-title">Driver / Pilot Partner</span>
+                <span class="role-subtitle">Drive Cabs or Pilot Skyways</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Curated Indian Face Avatar Selection -->
+          <div class="auth-field">
+            <div class="label-with-link">
+              <label>Select Profile Face Avatar</label>
+              <span class="field-hint-text">Curated Indian Faces</span>
+            </div>
+            <div class="avatar-picker-grid" id="avatar-picker-grid">
+              <!-- Rendered dynamically -->
+            </div>
+            <div class="custom-avatar-row">
+              <span class="or-divider-text">OR custom photo URL:</span>
+              <input type="url" id="reg-custom-avatar" placeholder="https://example.com/photo.jpg">
+            </div>
+          </div>
+
+          <!-- Driver Specific Vehicle & Car Choice Section (Visible when Driver selected) -->
+          <div class="driver-signup-section hidden" id="driver-signup-section">
+            <div class="driver-section-header">
+              <span class="driver-icon-badge">🚗</span>
+              <span class="driver-sec-title">Choice of Vehicle & Car Specs</span>
+            </div>
+            <div class="auth-fields-row">
+              <div class="auth-field">
+                <label for="reg-vehicle-type">Vehicle Fleet Tier</label>
+                <select id="reg-vehicle-type" class="config-select">
+                  <option value="auto">🛺 Ola Auto (Bajaj RE EV)</option>
+                  <option value="micro">🚗 Ola Micro / UberGo (Tata Tiago EV)</option>
+                  <option value="standard" selected>🚖 Ola Mini / UberX (Tata Tigor EV Prime)</option>
+                  <option value="luxury">⚡ Ola Prime / Premier (Mercedes-Benz E-Class)</option>
+                  <option value="bike">🏍️ Ola Bike / Moto (Ather 450X EV)</option>
+                  <option value="flying">🛸 Ola Air / Elevate (AeroVTOL Sky-X7 Air Garuda)</option>
+                </select>
+              </div>
+              <div class="auth-field">
+                <label for="reg-car-model">Car Model / Aircraft Name</label>
+                <input type="text" id="reg-car-model" placeholder="e.g. Tata Tigor EV Prime / Dzire" value="Tata Tigor EV Prime">
+              </div>
+            </div>
+            <div class="auth-field">
+              <label for="reg-license-plate">RTO License Plate / DGCA Reg</label>
+              <input type="text" id="reg-license-plate" placeholder="e.g. DL-01-CAB-2026 or KA-05-EV-4242" value="KA-05-EV-4242">
+            </div>
+          </div>
+
+          <button type="submit" class="btn-auth-primary" id="btn-submit-register">
+            <span class="btn-spinner hidden" id="register-spinner"></span>
+            <span>Create Account & Start Travelling ➔</span>
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- 8. Choice of Cars & Pilots Showcase Modal -->
+  <div class="modal-backdrop hidden" id="fleet-showcase-modal">
+    <div class="modal-card fleet-showcase-card">
+      <div class="modal-header">
+        <div class="modal-title-wrap">
+          <div class="fleet-showcase-badge">🇮🇳 PAN-INDIA FLEET LINEUP</div>
+          <h3 class="modal-title">Choice of Cars & Available Pilot Faces</h3>
+          <p class="modal-desc">Inspect vehicle models, battery range, passenger capacity and top-rated verified Indian pilots</p>
+        </div>
+        <button class="modal-close-btn" id="btn-close-fleet-showcase">✕</button>
+      </div>
+      <div class="modal-body fleet-showcase-body" id="fleet-showcase-grid">
+        <!-- Rendered dynamically from backend fare options -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notifications Container -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- Leaflet Map JS (for offline/open topographical map view) -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  
+  <!-- Main Frontend Application Logic -->
+  <script src="/static/app.js"></script>
+</body>
+</html>

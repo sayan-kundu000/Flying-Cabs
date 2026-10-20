@@ -1,0 +1,34 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+*.cpython-*.pyc
+
+# Unit test / coverage reports
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Environments & Local Configuration
+.env
+.venv/
+env/
+venv/
+
+# SQLite Databases & runtime files
+*.db
+*.db-shm
+*.db-wal
+*.db-journal
+*.sqlite3
+
+# Operating System & IDE files
+.DS_Store
+Thumbs.db
+Desktop.ini
+*.lnk
+.vscode/
+.idea/
+
+# Logs
+*.log
