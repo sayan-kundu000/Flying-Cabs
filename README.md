@@ -4,6 +4,8 @@ A full-stack ride-hailing and sky-transit application built with a **Python stac
 
 This project implements the architecture, data models, endpoints, and MVP recommendations detailed in the Google Drive specification (**Cab Booking Platform — Python Stack**).
 
+> 📖 **Looking for the exhaustive technical manual?** Read the [Full System & Architecture Documentation](DOCUMENTATION.md) for complete entity diagrams, algorithmic formulas, WebSocket protocol specs, and API request/response schemas.
+
 ---
 
 ## ✨ Features & Architecture Highlights
